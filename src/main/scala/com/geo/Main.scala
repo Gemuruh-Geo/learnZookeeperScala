@@ -11,5 +11,7 @@ object Main extends App {
   val SESSION_TIMEOUT: Int = 30000
   val leaderElection = LeaderElection(zooKeeperAddress = ZOOKEEPER_ADDRESS, sessionTimeout = SESSION_TIMEOUT)
   leaderElection.connectToZookeeper()
+  leaderElection.electLeader()
   leaderElection.run()
+
 }
