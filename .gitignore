@@ -4,5 +4,5 @@ target
 *.ipr
 *.iws
 .idea
-out
+.bsp
 .DS_Store
