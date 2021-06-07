@@ -13,6 +13,7 @@ import scala.jdk.CollectionConverters._
  */
 case class LeaderElection private (zooKeeperAddress: String, sessionTimeout: Int) extends Watcher{
   val ELECTION_NAMESPACE: String = "/election"
+  val TARGET_ZNODE_NAME: String = "/target_znode"
   case class Zk() extends ZooKeeper(zooKeeperAddress, sessionTimeout,this)
 
   var zk: Option[Zk] = None
@@ -53,6 +54,21 @@ case class LeaderElection private (zooKeeperAddress: String, sessionTimeout: Int
     }
   }
 
+  def watchTargetZnode(): Unit = {
+    zk match {
+      case Some(zooKeeper) =>
+        val stat = zooKeeper.exists(TARGET_ZNODE_NAME, this)
+        if(stat!=null) {
+          //if Exists
+          //Get Data
+          val data: Array[Byte] = zooKeeper.getData(TARGET_ZNODE_NAME,this, stat)
+          val children: List[String] = zooKeeper.getChildren(TARGET_ZNODE_NAME, this).asScala.toList
+
+          println(s"Data: ${if(data!=null) new String(data) else ""} children $children")
+        }
+    }
+  }
+
   override def process(event: WatchedEvent): Unit = {
     import org.apache.zookeeper.Watcher.Event.EventType
     event.getType match {
@@ -69,6 +85,15 @@ case class LeaderElection private (zooKeeperAddress: String, sessionTimeout: Int
             }
         }
       }
+      case EventType.NodeCreated =>
+        println(s"$TARGET_ZNODE_NAME was created")
+      case EventType.NodeDeleted =>
+        println(s"$TARGET_ZNODE_NAME was deleted")
+      case EventType.NodeDataChanged =>
+        println(s"$TARGET_ZNODE_NAME data changed")
+      case EventType.NodeChildrenChanged =>
+        println(s"$TARGET_ZNODE_NAME children changed")
     }
+    watchTargetZnode()
   }
 }

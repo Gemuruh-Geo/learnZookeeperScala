@@ -12,6 +12,7 @@ object Main extends App {
   val leaderElection = LeaderElection(zooKeeperAddress = ZOOKEEPER_ADDRESS, sessionTimeout = SESSION_TIMEOUT)
   leaderElection.connectToZookeeper()
   leaderElection.electLeader()
+  leaderElection.watchTargetZnode()
   leaderElection.run()
 
 }
